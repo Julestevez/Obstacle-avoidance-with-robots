@@ -39,6 +39,7 @@ while True:
     x1_end=x_end
     y1=0
     y1_end=40
+    beta=0
     #x1=np.linspace(x_start,x_end,50)
     #y1=np.linspace(0,100,50)
 
@@ -67,6 +68,16 @@ while True:
     dist=math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
     while y1<(y1_end-5) and x2<(x2_end-5):
+        #temporary variables (last iteration)
+        temp_x=x1
+        temp_y=y1
+        temp_x_f1= x1
+        temp_y_f1= y1
+        temp_beta=beta
+        
+
+
+        #attractive potential
         v_x_a1 = -k * (x1 - x1_end)
         v_y_a1 = -k * (y1 - y1_end)
 
@@ -98,13 +109,47 @@ while True:
         y2 = y2 + v_y_total2*dt
 
 
+        #### agrego formación de 3 ### al drone 1
+        alfa = 3.14 # the follower drone must be behind the leader
+       
+        temp = x1-temp_x
+        #avoid noise and sudden changes in beta calculus
+        beta= math.atan((y1-temp_y)/temp)
+        if beta<0: #it occurs when the x decreases
+            beta=3.14+beta
 
+        if (beta-temp_beta)>0.2:
+            beta=temp_beta+0.2
+        elif (beta-temp_beta)<-0.2:
+            beta=temp_beta-0.2
+
+
+        #if (y2[i]-y2[i-1]<0):
+        #    beta=3.14/2+beta
+        landaX=4*0.85*math.cos(alfa)
+        landaY=4*0.85*math.sin(alfa)
+        x_f1=x1 + landaX*math.cos(beta) - landaY*math.sin(beta)
+        y_f1=y1 + landaX*math.sin(beta) + landaY*math.cos(beta)
+
+        #new follower
+        #beta follower
+        temp_follower=x_f1-temp_x_f1
+        beta_follower = math.atan((y_f1-temp_y_f1)/temp_follower)
+        if beta_follower<0: #it occurs when the x decreases
+            beta_follower=3.14+beta_follower
+        x_f2=x_f1 + landaX*math.cos(beta_follower) - landaY*math.sin(beta_follower)
+        y_f2=y_f1 + landaX*math.sin(beta_follower) + landaY*math.cos(beta_follower)
+
+        
+        
         plt.clf()
         axes = plt.gca()
         axes.set_xlim([0,40])
         axes.set_ylim([0,40])
         plt.plot(x1,y1,'oy',markersize=20)
         plt.plot(x2,y2,'ob',markersize=20)
+        plt.plot(x_f1,y_f1,'ob',markersize=10)
+        plt.plot(x_f2,y_f2,'og',markersize=10)
         #circle1=plt.Circle((x1[i],y1[i]),3,color='blue')
         #circle2=plt.Circle((x2[i],y2[i]),3,color='red')
         #axes.add_artist(circle1)
@@ -154,9 +199,3 @@ plt.show()
     landaY=60*0.85*math.sin(alfa)
     x_pos_desired=States[0] + landaX*math.cos(beta) - landaY*math.sin(beta)
     y_pos_desired=States[1] - landaX*math.sin(beta) - landaY*math.cos(beta) """
-
-
-
-
-
-
